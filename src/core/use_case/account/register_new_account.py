@@ -1,9 +1,10 @@
 
 from src.core.domain.customer.customer import Customer
 from src.core.domain.account.account import Account
-class RegisterNewAccount(object):
+from src.core.domain.account.repository import AccountRepository
+class RegisterNewAccount():
     
-    def __init__(self, accountRepository):
+    def __init__(self, accountRepository: AccountRepository):
         self.accountRepository = accountRepository
 
 

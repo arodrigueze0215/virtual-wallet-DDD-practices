@@ -1,11 +1,9 @@
 
 #Core
 from src.core.domain.customer.customer import Customer
-from src.core.domain.customer.name import Name
-from src.core.domain.customer.contact_number import ContactNumber
-from src.core.domain.customer.person_number import PersonNumber
+from src.core.domain.customer.repository import CustomerRepository as BaseRepository
 
-class CustomerRepository():
+class CustomerRepository(BaseRepository):
     
     def __init__(self):
         self.store = {}

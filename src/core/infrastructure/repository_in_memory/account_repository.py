@@ -1,7 +1,8 @@
 #core
 from src.core.domain.account.account import Account
+from src.core.domain.account.repository import AccountRepository as RepositoryBase
 
-class AccountRepository(object):
+class AccountRepository(RepositoryBase):
     
     def __init__(self):
         self.store = {}

@@ -2,8 +2,9 @@ from src.core.domain.customer.customer import Customer
 from src.core.domain.customer.name import Name
 from src.core.domain.customer.contact_number import ContactNumber
 from src.core.domain.customer.person_number import PersonNumber
+from src.core.domain.customer.repository import CustomerRepository
 class RegisterNewCustomer():
-    def __init__(self, customerRepository):
+    def __init__(self, customerRepository: CustomerRepository):
         self.customerRepository = customerRepository
 
     def execute(self, **args):
