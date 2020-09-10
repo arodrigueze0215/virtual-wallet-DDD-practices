@@ -1,4 +1,4 @@
-/VWalletEnv/
+/VirtualWallet_Env/
 /.vscode/
 **/__pycache__/
 *sqlite3

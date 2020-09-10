@@ -2,10 +2,10 @@
 from src.core.domain.account.account import Account
 
 #models
-from model.models import Account as AccountDb
+from account.models import Account as AccountDb
 
 from .customer_repository import CustomerRepository
-class AccountRepository(object):
+class AccountRepository():
     
     def __init__(self):
         self.store = {}

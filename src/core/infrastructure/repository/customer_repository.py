@@ -4,7 +4,7 @@ import uuid
 from django.contrib.auth.models import User
 
 #models
-from model.models import Customer as CustomerDb
+from customer.models import Customer as CustomerDb
 
 #Core
 from src.core.domain.customer.customer import Customer
