@@ -56,5 +56,8 @@ class Account(object):
         if self.balance <= 0:
             self.setStatus(Status.CLOSED)
 
+    def setOpeningDate(self, date):
+        self.OpeningDate = OpenDate.add(date)
 
-        
+    def __str__(self):
+        return f'id:{self.id}, status:{self.status}, balance:{self.balance}'

@@ -3,8 +3,9 @@
 #Django
 from django.urls import path, include
 
-from .views import RegisterNewAccountController
+from .views import (RegisterNewAccountController, DepositFundController)
 
 urlpatterns = [
-    path('', RegisterNewAccountController.as_view())
+    path('account', RegisterNewAccountController.as_view(), name='register_new_account'),
+    path('deposit', DepositFundController.as_view(), name='deposit_fund')
 ]

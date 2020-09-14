@@ -24,3 +24,13 @@ class Account(models.Model):
 
     class Meta:
         app_label = 'account'
+
+class Credit(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, auto_created=False)
+    account = models.ForeignKey(Account, on_delete=models.CASCADE)
+    ammount = models.PositiveIntegerField()
+    transaction_date = models.DateField(auto_now=False)
+    description = models.CharField(max_length=1500)
+
+    def __str__(self):
+        return f'Account: {account}, Ammount: {self.ammount}'

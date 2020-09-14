@@ -7,6 +7,13 @@ class OpenDate(object):
     def create():
         openDate = OpenDate()
         return openDate
+    
+    @staticmethod
+    def add(date):
+        openDate = OpenDate()
+        openDate.date = date
+        return openDate
+
 
     def __str__(self):
         return f'{self.date}'

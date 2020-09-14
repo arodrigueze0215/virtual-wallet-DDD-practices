@@ -7,6 +7,7 @@ sys.path.insert(1, '/home/arodriguez/projects/virtual-wallet')
 #Django rest framework
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework import status
 
 
 #core
@@ -14,6 +15,7 @@ from src.core.infrastructure.repository.account_repository import AccountReposit
 from src.core.use_case.account.register_new_account import RegisterNewAccount
 from src.core.use_case.customer.register_new_customer import RegisterNewCustomer
 from src.core.infrastructure.repository.customer_repository import CustomerRepository
+from src.core.use_case.account.deposit_fund_in_account import DepositFundInAccount
 
 class RegisterNewAccountController(APIView):
     """Controller that let register a new Account"""
@@ -22,7 +24,7 @@ class RegisterNewAccountController(APIView):
     def __init__(self):        
         self.accountRepository = AccountRepository()
         self.customerRepository = CustomerRepository()
-        self.registerNewAccount = RegisterNewAccount(self.accountRepository)
+        self.registerNewAccount = RegisterNewAccount(self.accountRepository, self.customerRepository)
         self.registerNewCustomer = RegisterNewCustomer(self.customerRepository)
 
     def post(self, request, format=None):
@@ -32,7 +34,6 @@ class RegisterNewAccountController(APIView):
         contact_number = request.data.get('contact_number')
         person_number = request.data.get('person_number')
         account_id = (request.data.get('account_id'))
-        print('request.data', request.data)
         self.registerNewCustomer.execute(
             customer_id = customer_id,
             first_name = first_name,
@@ -41,7 +42,20 @@ class RegisterNewAccountController(APIView):
             person_number = person_number
         )
         # Repositorio deberia ir en el execute del register new account
-        costumer = self.customerRepository.findById(customer_id)
-        self.registerNewAccount.execute(account_id, costumer)
-        return Response()
+        self.registerNewAccount.execute(account_id, customer_id)
+        return Response(status=status.HTTP_201_CREATED)
+
+class DepositFundController(APIView):
+    """Api controller to deposit a fund on an account"""
+
+    def __init__(self):
+        self.accountRepository = AccountRepository()
+        self.depositFundInAccount = DepositFundInAccount(self.accountRepository)
+
+    def post(self, request, format=None):
+        account_id = request.data.get('account_id')
+        amount = request.data.get('amount')
+        description = request.data.get('description')
+        self.depositFundInAccount.execute(account_id, amount=amount, description=description)
+        return Response(status=status.HTTP_200_OK)
 

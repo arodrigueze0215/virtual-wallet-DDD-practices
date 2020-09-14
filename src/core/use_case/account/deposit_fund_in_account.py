@@ -6,6 +6,7 @@ class DepositFundInAccount(object):
     def __init__(self, accountRepository:AccountRepository):
         self.accountRepository = accountRepository
 
-    def execute(self, account: Account, amount, description):
+    def execute(self, idAccount, amount, description):
+        account = self.accountRepository.findById(idAccount)
         account.makeCredit(amount, description)
         self.accountRepository.save(account)

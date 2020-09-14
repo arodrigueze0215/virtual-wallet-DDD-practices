@@ -10,3 +10,6 @@ class AccountRepository():
 
     def save(self, account:Account):
         pass
+
+    def storeTransaction(self, account:Account):
+        pass

@@ -19,7 +19,7 @@ class TestUseCaseRegisterNewAccount(unittest.TestCase):
     def setUp(self):
         self.accountRepository = AccountRepository()
         self.customerRepository = CustomerRepository()
-        self.registerNewAccount = RegisterNewAccount(self.accountRepository)
+        self.registerNewAccount = RegisterNewAccount(self.accountRepository, self.customerRepository)
         self.registerNewCustomer = RegisterNewCustomer(self.customerRepository)
         self.idAccount = 1
 
@@ -29,18 +29,17 @@ class TestUseCaseRegisterNewAccount(unittest.TestCase):
         self._then_save_the_new_account_in_repository()
 
     def _given_created_customer(self):
-        customer_id = 1
+        self.customer_id = 1
         self.registerNewCustomer.execute(
-            customer_id = customer_id,
+            customer_id = self.customer_id,
             first_name = 'Andres',
             last_name = 'Rodriguez',
             contact_number = '3112673404',
             person_number = '1088997602'
         )
-        self.customer = self.customerRepository.findById(customer_id)
 
     def _when_customer_register_new_account(self):
-        self.registerNewAccount.execute(self.idAccount, self.customer)
+        self.registerNewAccount.execute(self.idAccount, self.customer_id)
 
     def _then_save_the_new_account_in_repository(self):
         account = self.accountRepository.findById(self.idAccount)
@@ -67,16 +66,15 @@ class TestUseCaseDepositFundExistingAccount(unittest.TestCase):
         self.customer = Customer.create(idCustomer, fullName, personNumber, contactNumber)
     
     def _given_an_existing_account(self):
-        idAccount = 1
+        self.idAccount = 1
         idCustomer = 1
-        self.account = Account.create(idAccount, idCustomer)
+        self.account = Account.create(self.idAccount, idCustomer)
         self.accountRepository.save(self.account)
     
     def _when_deposit_fund_into_account(self):
         amount = 100
         description = 'A deposit of 100'
-        account = self.accountRepository.findById(self.account.id)
-        self.depositFundInAccount.execute(account, amount, description)
+        self.depositFundInAccount.execute(self.idAccount, amount, description)
     
     def _then_verify_whether_account_has_balance(self):
         account = self.accountRepository.findById(self.account.id)
