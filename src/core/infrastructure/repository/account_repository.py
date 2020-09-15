@@ -33,7 +33,33 @@ class AccountRepository(RepositoryBase):
 
     def findCustomerDBObjectById(self, customer_id):
         return self.customerRepository.getCustomerDBObject(customer_id)
-    
+
+    def findAccountDBObjectById(self, account_id):
+        account_db = AccountDb.objects.get(account_id=account_id)
+        if account_db == None:
+            return None
+        return account_db
+
+    def addDeposit(self, account: Account):
+        account_db = self.findAccountDBObjectById(account.id)
+        credit = account.creditList[0]
+        print('----credit----', credit)
+        Credit.objects.create(
+            account = account_db,
+            ammount = credit.get_amount(),
+            description = credit.description.text,
+            transaction_date = credit.get_date()
+        )
+
+        all_deposit = Credit.objects.filter(account=account_db)
+        balance = 0
+        for deposit in all_deposit:
+            balance = balance + deposit.ammount
+        
+        account_db.balance = balance
+        account_db.save()
+            
+
     def save(self, account: Account):
         customer = self.findCustomerDBObjectById(account.idCustomer)
         account_db = AccountDb()

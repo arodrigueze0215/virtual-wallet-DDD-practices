@@ -9,4 +9,4 @@ class DepositFundInAccount(object):
     def execute(self, idAccount, amount, description):
         account = self.accountRepository.findById(idAccount)
         account.makeCredit(amount, description)
-        self.accountRepository.save(account)
+        self.accountRepository.addDeposit(account)

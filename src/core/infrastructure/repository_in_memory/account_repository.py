@@ -17,3 +17,6 @@ class AccountRepository(RepositoryBase):
     def save(self, account: Account):
         self.store[account.id] = account
 
+    def addDeposit(self, account: Account):
+        account = self.findById(account.id)
+        self.save(account)

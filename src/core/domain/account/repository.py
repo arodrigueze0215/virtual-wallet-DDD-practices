@@ -11,5 +11,5 @@ class AccountRepository():
     def save(self, account:Account):
         pass
 
-    def storeTransaction(self, account:Account):
+    def addDeposit(self, account:Account):
         pass

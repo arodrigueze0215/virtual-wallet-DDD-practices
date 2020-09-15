@@ -72,4 +72,7 @@ class TestUseCaseDepositFundExistingAccount(APITestCase):
 
     
     def _then_verify_whether_the_account_got_deposit(self):
+        account = Account.objects.get(account_id='100')
+
         self.assertEqual(self.response.status_code, status.HTTP_200_OK)
+        self.assertEqual(account.balance, 100)

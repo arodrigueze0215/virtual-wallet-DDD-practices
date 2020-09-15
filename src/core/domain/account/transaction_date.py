@@ -6,5 +6,4 @@ class TransactionDate(object):
     @staticmethod
     def create():
         transactionDate = TransactionDate()
-        return TransactionDate
-        
+        return transactionDate

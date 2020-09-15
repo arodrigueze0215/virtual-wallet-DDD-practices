@@ -25,7 +25,7 @@ class Account(object):
     
     def withDraw(self, amountValue, descriptionText):
         debit = Debit(amountValue, descriptionText)
-        if debit.getAmount() <= self.balance:
+        if debit.get_amount() <= self.balance:
             self.debitList.append(debit)
             self.balance = self._calculateTotalDebit()
         else:
@@ -36,13 +36,13 @@ class Account(object):
     def _calculateTotalCredit(self):
         count = 0
         for item in self.creditList:
-            count += item.getAmount()
+            count += item.get_amount()
         return count
 
     def _calculateTotalDebit(self):
         count = 0
         for item in self.debitList:
-            count += item.getAmount()
+            count += item.get_amount()
         count = self.balance - count
         return count
 

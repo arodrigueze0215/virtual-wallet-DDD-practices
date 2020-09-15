@@ -10,5 +10,12 @@ class Transaction():
         self.description = Description(descriptionText)
         self.transactionDate = TransactionDate.create()
 
-    def getAmount(self):
+    
+    def get_amount(self):
         return self.amount.value
+
+    def get_date(self):
+        return self.transactionDate.date
+
+    def __str__(self):
+        return f'Amount: {self.get_amount()}, Description: {self.description.text}'
