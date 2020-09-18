@@ -5,6 +5,7 @@ from src.core.domain.account.repository import AccountRepository as RepositoryBa
 #models
 from account.models import (
     Credit,
+    Debit,
     Account as AccountDb
 )
 
@@ -43,7 +44,6 @@ class AccountRepository(RepositoryBase):
     def addDeposit(self, account: Account):
         account_db = self.findAccountDBObjectById(account.id)
         credit = account.creditList[0]
-        print('----credit----', credit)
         Credit.objects.create(
             account = account_db,
             ammount = credit.get_amount(),
@@ -58,6 +58,25 @@ class AccountRepository(RepositoryBase):
         
         account_db.balance = balance
         account_db.save()
+
+    def addWithdraw(self, account:Account):
+        account_db = self.findAccountDBObjectById(account.id)
+        debit = account.debitList[0]
+        Debit.objects.create(
+            account = account_db,
+            ammount = debit.get_amount(),
+            description = debit.description.text,
+            transaction_date = debit.get_date()
+        )
+
+        all_debit = Credit.objects.filter(account=account_db)
+        balance = 0
+        for debit in all_debit:
+            balance = balance + debit.ammount
+        
+        account_db.balance = balance
+        account_db.save()
+
             
 
     def save(self, account: Account):

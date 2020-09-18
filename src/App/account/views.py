@@ -1,9 +1,5 @@
-
-
-
 import sys
-sys.path.insert(1, '/home/arodriguez/projects/virtual-wallet')
-
+sys.path.insert(1, '/Users/arodriguez/personal_projects/virtual-wallet-DDD-practices')
 #Django rest framework
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -16,6 +12,7 @@ from src.core.use_case.account.register_new_account import RegisterNewAccount
 from src.core.use_case.customer.register_new_customer import RegisterNewCustomer
 from src.core.infrastructure.repository.customer_repository import CustomerRepository
 from src.core.use_case.account.deposit_fund_in_account import DepositFundInAccount
+from src.core.use_case.account.withdraw_fund import WithDrawFund
 
 class RegisterNewAccountController(APIView):
     """Controller that let register a new Account"""
@@ -57,5 +54,18 @@ class DepositFundController(APIView):
         amount = request.data.get('amount')
         description = request.data.get('description')
         self.depositFundInAccount.execute(account_id, amount=amount, description=description)
+        return Response(status=status.HTTP_200_OK)
+
+class WithdrawController(APIView):
+
+    def __init__(self):
+        self.accountRepository = AccountRepository()
+        self.withDraw = WithDrawFund(self.accountRepository)
+
+    def post(self, request, format=None):
+        account_id = request.data.get('account_id')
+        amount = request.data.get('amount')
+        description = request.data.get('description')
+        self.withDraw.execute(account_id,amount,description)
         return Response(status=status.HTTP_200_OK)
 

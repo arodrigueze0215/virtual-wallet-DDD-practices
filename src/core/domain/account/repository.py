@@ -13,3 +13,6 @@ class AccountRepository():
 
     def addDeposit(self, account:Account):
         pass
+
+    def addWithdraw(self, account:Account):
+        pass

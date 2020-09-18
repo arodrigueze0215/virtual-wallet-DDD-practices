@@ -32,3 +32,8 @@ class Credit(TransactionModel):
     account = models.ForeignKey(Account, on_delete=models.CASCADE)
     def __str__(self):
         return f'Account: {self.account}, Ammount: {self.ammount}'
+
+class Debit(TransactionModel):
+    account = models.ForeignKey(Account, on_delete=models.CASCADE)
+    def __str__(self):
+        return f'Account: {self.account}, Ammount: {self.ammount}'

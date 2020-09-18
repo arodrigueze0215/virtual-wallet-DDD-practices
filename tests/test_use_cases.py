@@ -93,18 +93,19 @@ class TestUseCaseCustomerWithdrawFundsExistingAccount(unittest.TestCase):
         self._then_verify_whether_account_has_balance()
     
     def _given_an_existing_account(self):
-        idAccount = 1
+        self.idAccount = 1
         idCustomer = 1
-        self.account = Account.create(idAccount, idCustomer)
-        self.account.makeCredit(300, 'A deposit of 300')
+        account = Account.create(self.idAccount, idCustomer)
+        account.makeCredit(300, 'A deposit of 300')
+        self.accountRepository.save(account)
 
     def _when_customer_withdraw_from_existing_account(self):
         amount = 10
         description = 'A withdraw of 10 from ATM'
-        self.withdrawFund.execute(self.account, amount, description)
+        self.withdrawFund.execute(self.idAccount, amount, description)
 
     def _then_verify_whether_account_has_balance(self):
-        account = self.accountRepository.findById(self.account.id)
+        account = self.accountRepository.findById(self.idAccount)
         self.assertEqual(account.balance, 290)
 
 class TestUseCaseAllowCustomerToCloseAccountIfBalanceIsZero(unittest.TestCase):
@@ -160,16 +161,17 @@ class TestUseCaseDontAllowWithdrawMorThanExistingFunds(unittest.TestCase):
         self._when_customer_withdraw_from_existing_account()
     
     def _given_an_existing_account(self):
-        idAccount = 1
+        self.idAccount = 1
         idCustomer = 1
-        self.account = Account.create(idAccount, idCustomer)
+        self.account = Account.create(self.idAccount, idCustomer)
         self.account.makeCredit(300, 'A deposit of 300')
+        self.accountRepository.save(self.account)
 
     def _when_customer_withdraw_from_existing_account(self):
         amount = 400
         description = 'A withdraw of 400 from ATM'
         with self.assertRaises(DontAllowWithdawMoreThanExistingFunds):
-            self.withdrawFund.execute(self.account, amount, description)
+            self.withdrawFund.execute(self.idAccount, amount, description)
 
 class TestUseCaseAllowGetAccountDetails(unittest.TestCase):
     def setUp(self):
