@@ -10,6 +10,9 @@ from rest_framework import status
 from .models import Account
 from customer.models import Customer
 
+#Exceptions
+from .exceptions import WithdawMoreThanExistingFunds
+
 #utils
 from uilts.objects_mother import (
     customer_db_mother,
@@ -75,13 +78,19 @@ class TestUseCaseCustomerWithdrawFundsExistingAccount(APITestCase):
 
     
     def test_allow_the_customer_to_withdraw_funds_from_an_existing_account(self):
-        self._given_an_existing_account_with_balance_1000()
+        self._given_an_existing_account_with_balance_1000('123')
         self._when_customer_withdraw_from_existing_account()
         self._then_verify_whether_account_has_updated_balance()
 
-    def _given_an_existing_account_with_balance_1000(self):
+    def test_do_not_allow_the_Customer_to_Withdraw_more_than_the_existing_funds(self):
+        self._given_an_existing_account_with_balance_1000('2')
+        self._when_customer_withdraw_more_than_existing_funds()
+        self._then_raise_exception_denying_the_withdraw()
+
+
+    def _given_an_existing_account_with_balance_1000(self, account_id):
         customer = customer_db_mother(first_name='Andressito')
-        account_db_mother(customer, balance=1000, account_id='123')
+        account_db_mother(customer, balance=1000, account_id=account_id)
 
 
     def _when_customer_withdraw_from_existing_account(self):
@@ -92,13 +101,24 @@ class TestUseCaseCustomerWithdrawFundsExistingAccount(APITestCase):
             'description': 'A withdraw of 100'
         }
         self.response = self.client.post(url, data, format='json')
-    
+
+    def _when_customer_withdraw_more_than_existing_funds(self):
+        url = reverse('withdraw')
+        data = {
+            'account_id': '2',
+            'amount': 1200,
+            'description': 'A withdraw of 1200'
+        }
+        self.response = self.client.post(url, data, format='json')    
         
     def _then_verify_whether_account_has_updated_balance(self):
         account = Account.objects.get(account_id='123')
-
         self.assertEqual(self.response.status_code, status.HTTP_200_OK)
         self.assertEqual(account.balance, 900)
+
+    def _then_raise_exception_denying_the_withdraw(self):
+        self.assertRaises(WithdawMoreThanExistingFunds)
+        self.assertEqual(self.response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 
 
 class TestUseCaseAllowCustomerToCloseAccountIfBalanceIsZero(APITestCase):
