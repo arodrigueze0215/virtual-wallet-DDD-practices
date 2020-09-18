@@ -58,6 +58,9 @@ class Account(object):
 
     def setOpeningDate(self, date):
         self.OpeningDate = OpenDate.add(date)
+    
+    def get_opening_date(self):
+        return self.OpeningDate.date
 
     def __str__(self):
         return f'id:{self.id}, status:{self.status}, balance:{self.balance}'

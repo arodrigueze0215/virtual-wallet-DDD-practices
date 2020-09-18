@@ -16,3 +16,6 @@ class AccountRepository():
 
     def addWithdraw(self, account:Account):
         pass
+    
+    def update(self, account: Account):
+        pass

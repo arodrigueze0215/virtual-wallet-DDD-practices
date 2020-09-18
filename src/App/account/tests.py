@@ -14,6 +14,8 @@ from customer.models import Customer
 from uilts.objects_mother import (
     customer_db_mother,
     account_db_mother,
+    debit_db_mother,
+    credit_db_mother,
 )
 
 
@@ -73,11 +75,11 @@ class TestUseCaseCustomerWithdrawFundsExistingAccount(APITestCase):
 
     
     def test_allow_the_customer_to_withdraw_funds_from_an_existing_account(self):
-        self._given_an_existing_account_with_balance_100()
+        self._given_an_existing_account_with_balance_1000()
         self._when_customer_withdraw_from_existing_account()
         self._then_verify_whether_account_has_updated_balance()
 
-    def _given_an_existing_account_with_balance_100(self):
+    def _given_an_existing_account_with_balance_1000(self):
         customer = customer_db_mother(first_name='Andressito')
         account_db_mother(customer, balance=1000, account_id='123')
 
@@ -94,9 +96,45 @@ class TestUseCaseCustomerWithdrawFundsExistingAccount(APITestCase):
         
     def _then_verify_whether_account_has_updated_balance(self):
         account = Account.objects.get(account_id='123')
-        print('account', account)
 
         self.assertEqual(self.response.status_code, status.HTTP_200_OK)
         self.assertEqual(account.balance, 900)
 
 
+class TestUseCaseAllowCustomerToCloseAccountIfBalanceIsZero(APITestCase):
+
+    def test_dont_allow_the_customer_to_close_a_Checking_Account_only_if_it_has_balance(self):        
+        self._given_an_account_with_balance()
+        self._when_customer_tries_close_account('1')
+        self._then_varify_is_still_account_opened()
+
+    def test_allow_the_customer_to_close_a_Checking_Account_only_if_it_has_balance_zero(self):
+        self._given_an_account_without_balance()
+        self._when_customer_tries_close_account('2')
+        self._then_varify_is_account_closed()
+
+
+    def _given_an_account_without_balance(self):
+        customer = customer_db_mother()
+        self.account = account_db_mother(customer, account_id='2', balance=0)
+    
+    def _given_an_account_with_balance(self):
+        customer = customer_db_mother()
+        self.account = account_db_mother(customer, account_id='1', balance=500)
+
+    def _when_customer_tries_close_account(self, account_id):
+        url = reverse('close_account')
+        data = { 'account_id': account_id }
+        self.response = self.client.post(url, data, format='json')
+    
+    def _then_varify_is_still_account_opened(self):
+        account = Account.objects.get(account_id='1')
+        self.assertEqual(self.response.status_code, status.HTTP_200_OK)
+        self.assertEqual(account.balance, 500)
+        self.assertEqual(account.status, '1')
+
+    def _then_varify_is_account_closed(self):
+        account = Account.objects.get(account_id='2')
+        self.assertEqual(self.response.status_code, status.HTTP_200_OK)
+        self.assertEqual(account.balance, 0)
+        self.assertEqual(account.status, '0')

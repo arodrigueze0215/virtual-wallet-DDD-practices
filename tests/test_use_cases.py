@@ -126,9 +126,9 @@ class TestUseCaseAllowCustomerToCloseAccountIfBalanceIsZero(unittest.TestCase):
         self._then_varify_is_not_closed_account_status()
     
     def _given_a_deposit_funds(self):
-        idAccount = 1
+        self.idAccount = 1
         idCustomer = 1
-        self.account = Account.create(idAccount, idCustomer)
+        self.account = Account.create(self.idAccount, idCustomer)
         self.account.makeCredit(300, 'A deposit of 300')
 
     def _given_a_300_withdraw_funds(self):
@@ -138,13 +138,15 @@ class TestUseCaseAllowCustomerToCloseAccountIfBalanceIsZero(unittest.TestCase):
         self.account.withDraw(200, 'A withdraw of 200 from ATM')
 
     def _when_customer_tries_close_account(self):
-        self.closeAccount.execute(self.account)
+        self.accountRepository.save(self.account)
+        self.closeAccount.execute(self.idAccount)
 
     def _when_customer_tries_close_account_with_an_existing_balance(self):
-        self.closeAccount.execute(self.account)
+        self.accountRepository.save(self.account)
+        self.closeAccount.execute(self.idAccount)
 
     def _then_varify_is_closed_account_status(self):
-        isClosed = self.accountRepository.isClosed(self.account.id)
+        isClosed = self.accountRepository.isClosed(self.idAccount)
         self.assertEqual(isClosed, True)
 
     def _then_varify_is_not_closed_account_status(self):

@@ -1,5 +1,5 @@
 #core
-from src.core.domain.account.account import Account
+from src.core.domain.account.account import Account, Status
 from src.core.domain.account.repository import AccountRepository as RepositoryBase
 
 #models
@@ -29,8 +29,8 @@ class AccountRepository(RepositoryBase):
         return account
 
     def isClosed(self, accountId):
-        account = self.store.get(accountId)
-        return account.isClosed()
+        account_db = self.findAccountDBObjectById(accountId)
+        return account_db.status == Status.CLOSED
 
     def findCustomerDBObjectById(self, customer_id):
         return self.customerRepository.getCustomerDBObject(customer_id)
@@ -69,15 +69,22 @@ class AccountRepository(RepositoryBase):
             transaction_date = debit.get_date()
         )
 
-        all_debit = Credit.objects.filter(account=account_db)
-        balance = 0
+        all_debit = Debit.objects.filter(account=account_db)
+        balance = account_db.balance
         for debit in all_debit:
-            balance = balance + debit.ammount
+            balance = balance - debit.ammount
         
         account_db.balance = balance
         account_db.save()
-
             
+
+    def update(self, account: Account):
+        account_db = self.findAccountDBObjectById(account.id)
+        account_db.status = int(account.status)
+        account_db.balance = account.balance
+        account_db.opening_date = account.get_opening_date()
+        account_db.save()
+        
 
     def save(self, account: Account):
         customer = self.findCustomerDBObjectById(account.idCustomer)

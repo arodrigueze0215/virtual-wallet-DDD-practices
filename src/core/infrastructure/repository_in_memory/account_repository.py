@@ -20,3 +20,6 @@ class AccountRepository(RepositoryBase):
     def addDeposit(self, account: Account):
         account = self.findById(account.id)
         self.save(account)
+
+    def update(self, account: Account):
+        self.store[account.id] = account

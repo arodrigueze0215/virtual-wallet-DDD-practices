@@ -13,6 +13,7 @@ from src.core.use_case.customer.register_new_customer import RegisterNewCustomer
 from src.core.infrastructure.repository.customer_repository import CustomerRepository
 from src.core.use_case.account.deposit_fund_in_account import DepositFundInAccount
 from src.core.use_case.account.withdraw_fund import WithDrawFund
+from src.core.use_case.account.close_account import CloseAccount
 
 class RegisterNewAccountController(APIView):
     """Controller that let register a new Account"""
@@ -68,4 +69,16 @@ class WithdrawController(APIView):
         description = request.data.get('description')
         self.withDraw.execute(account_id,amount,description)
         return Response(status=status.HTTP_200_OK)
+
+class CloseAccountController(APIView):
+     
+    def __init__(self):
+        self.accountRepository = AccountRepository()
+        self.closeAccount =CloseAccount(self.accountRepository)
+
+    def post(self, request, format=None):
+        account_id = request.data.get('account_id')
+        self.closeAccount.execute(account_id)
+        return Response(status=status.HTTP_200_OK)
+
 
