@@ -14,7 +14,7 @@ class Customer(models.Model):
     phone_number = models.CharField(max_length=50)
 
     def __str__(self):
-        return f'{self.user.get_full_name()}'
+        return self.user.get_full_name()
 
     @property
     def customer_name(self):

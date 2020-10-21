@@ -14,11 +14,12 @@ from src.core.infrastructure.repository.customer_repository import CustomerRepos
 from src.core.use_case.account.deposit_fund_in_account import DepositFundInAccount
 from src.core.use_case.account.withdraw_fund import WithDrawFund
 from src.core.use_case.account.close_account import CloseAccount
+from src.core.use_case.account.get_account_details import GetAccountDetails
 
 from .exceptions import WithdawMoreThanExistingFunds
 
-class RegisterNewAccountController(APIView):
-    """Controller that let register a new Account"""
+class AccountController(APIView):
+    """Controller Account"""
 
 
     def __init__(self):        
@@ -26,6 +27,14 @@ class RegisterNewAccountController(APIView):
         self.customerRepository = CustomerRepository()
         self.registerNewAccount = RegisterNewAccount(self.accountRepository, self.customerRepository)
         self.registerNewCustomer = RegisterNewCustomer(self.customerRepository)
+        self.getAccountDetails = GetAccountDetails(self.accountRepository)
+
+    def get(self, request, format=None):
+        account_id = request.query_params.get('id')
+        account = self.getAccountDetails.execute(account_id)
+        return Response(status=status.HTTP_200_OK)
+
+
 
     def post(self, request, format=None):
         customer_id = request.data.get('customer_id')
@@ -33,7 +42,7 @@ class RegisterNewAccountController(APIView):
         last_name = request.data.get('last_name')
         contact_number = request.data.get('contact_number')
         person_number = request.data.get('person_number')
-        account_id = (request.data.get('account_id'))
+        account_id = request.data.get('account_id')
         self.registerNewCustomer.execute(
             customer_id = customer_id,
             first_name = first_name,
@@ -56,7 +65,7 @@ class DepositFundController(APIView):
         account_id = request.data.get('account_id')
         amount = request.data.get('amount')
         description = request.data.get('description')
-        self.depositFundInAccount.execute(account_id, amount=amount, description=description)
+        self.depositFundInAccount.execute(account_id, amount=int(amount), description=description)
         return Response(status=status.HTTP_200_OK)
 
 class WithdrawController(APIView):
@@ -70,7 +79,7 @@ class WithdrawController(APIView):
         amount = request.data.get('amount')
         description = request.data.get('description')
         try:
-            self.withDraw.execute(account_id,amount,description)
+            self.withDraw.execute(account_id, int(amount), description)
             return Response(status=status.HTTP_200_OK)
         except:
             raise WithdawMoreThanExistingFunds

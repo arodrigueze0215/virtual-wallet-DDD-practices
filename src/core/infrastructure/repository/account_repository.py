@@ -20,12 +20,35 @@ class AccountRepository(RepositoryBase):
         """This return an Account object that was found by ID from de DB"""
 
         account_db = AccountDb.objects.get(account_id = idAccount)
-        if account_db == None:
+        if account_db is None:
             return None
         account = Account.create(account_db.account_id, account_db.customer.customer_id)
         account.setStatus(account_db.status)
         account.balance = account_db.balance
         account.setOpeningDate(account_db.opening_date)
+        return account
+
+    def _getAllMovements(self, account: Account):
+        """ Get All Moventments Deposits and Debits"""        
+        account_db = self.findAccountDBObjectById(account.id)
+        deposit_list = Credit.objects.filter(account=account_db)
+        for deposit in deposit_list:
+            account.makeCredit(deposit.ammount, deposit.description)
+
+        debit_list = Debit.objects.filter(account=account_db)
+        for debit in debit_list:
+            account.withDraw(debit.ammount, debit.description)
+
+
+
+    def getAccountDetail(self, idAccount):
+        account_db = AccountDb.objects.get(account_id = idAccount)
+        if account_db is None:
+            return None
+        account = Account.create(account_db.account_id, account_db.customer.customer_id)
+        account.setStatus(account_db.status)
+        account.setOpeningDate(account_db.opening_date)
+        self._getAllMovements(account)
         return account
 
     def isClosed(self, accountId):
@@ -37,7 +60,7 @@ class AccountRepository(RepositoryBase):
 
     def findAccountDBObjectById(self, account_id):
         account_db = AccountDb.objects.get(account_id=account_id)
-        if account_db == None:
+        if account_db is None:
             return None
         return account_db
 

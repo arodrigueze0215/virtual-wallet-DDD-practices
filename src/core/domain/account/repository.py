@@ -1,8 +1,12 @@
 from .account import Account
+from abc import ABCMeta
 
-class AccountRepository():
+class AccountRepository(metaclass=ABCMeta):
     """ Account Repository, this is a Account port to comunicate with the repostories"""
     def findById(self, idAccount):
+        pass
+
+    def getAccountDetail(self, idAccount):
         pass
 
     def isClosed(self, accountId):

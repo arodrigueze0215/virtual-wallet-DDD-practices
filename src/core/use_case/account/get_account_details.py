@@ -4,4 +4,4 @@ class GetAccountDetails():
         self.accountRepository = accountRepository
 
     def execute(self, idAccount):
-        return self.accountRepository.findById(idAccount)
+        return self.accountRepository.getAccountDetail(idAccount)

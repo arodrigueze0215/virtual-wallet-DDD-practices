@@ -23,3 +23,6 @@ class AccountRepository(RepositoryBase):
 
     def update(self, account: Account):
         self.store[account.id] = account
+
+    def getAccountDetail(self, idAccount):
+        return self.store.get(idAccount)

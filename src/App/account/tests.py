@@ -28,7 +28,7 @@ class APIAccountTest(APITestCase):
         """
             Test Api to register new Account
         """
-        url = reverse('register_new_account')
+        url = reverse('account')
         data = { 'customer_id':'2',
                  'first_name':'Rafa',
                  'last_name':'Rodriguez',
@@ -120,7 +120,6 @@ class TestUseCaseCustomerWithdrawFundsExistingAccount(APITestCase):
         self.assertRaises(WithdawMoreThanExistingFunds)
         self.assertEqual(self.response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 
-
 class TestUseCaseAllowCustomerToCloseAccountIfBalanceIsZero(APITestCase):
 
     def test_dont_allow_the_customer_to_close_a_Checking_Account_only_if_it_has_balance(self):        
@@ -158,3 +157,40 @@ class TestUseCaseAllowCustomerToCloseAccountIfBalanceIsZero(APITestCase):
         self.assertEqual(self.response.status_code, status.HTTP_200_OK)
         self.assertEqual(account.balance, 0)
         self.assertEqual(account.status, '0')
+
+class TestUseCaseAllowGetAccountDetails(APITestCase):
+
+    def test_get_account_details(self):
+        self._given_a_customer()
+        self._given_an_account()
+        self._given_a_deposit_of_1000()
+        self._given_a_withdraw_of_200()
+        self._when_get_detail()
+        self._then_validate_the_account_details()
+
+    def _given_a_customer(self):
+        self.customer = customer_db_mother()
+
+    def _given_an_account(self):
+        self.account = account_db_mother(self.customer, balance=800)
+
+    def _given_a_deposit_of_1000(self):
+        credit_db_mother(self.account, amount=500)
+        credit_db_mother(self.account, amount=500)
+
+    def _given_a_withdraw_of_200(self):
+        debit_db_mother(self.account, amount=100)
+        debit_db_mother(self.account, amount=100)
+
+    def _when_get_detail(self):
+        url = f'{reverse("account")}?id=100'
+        # Missing the validation body json response        
+        self.response = self.client.get(url)
+
+    def _then_validate_the_account_details(self):
+        self.assertEqual(self.response.status_code, status.HTTP_200_OK)
+
+    
+
+
+
