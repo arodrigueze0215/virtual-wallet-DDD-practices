@@ -3,8 +3,11 @@ from src.core.domain.account.credit import Credit
 from src.core.domain.account.debit import Debit
 from src.core.domain.account.status import Status
 from src.core.domain.exceptions import DontAllowWithdawMoreThanExistingFunds
-class Account(object):
+from src.core.domain.agregate_root import AgregateRoot
+from .events.account_was_created import AccountWasCreated
+class Account(AgregateRoot):
     def __init__(self, idAccount, idCustomer):
+        super().__init__(idAccount)
         self.id = idAccount
         self.status = Status.OPEN
         self.idCustomer = idCustomer
@@ -16,6 +19,8 @@ class Account(object):
     @staticmethod
     def create(idAccount, idCustomer):
         account = Account(idAccount, idCustomer)
+        accountWasCreated = AccountWasCreated(idAccount)
+        account.register(accountWasCreated)
         return account
 
     def makeCredit(self, amountValue, descriptionText):

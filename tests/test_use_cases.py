@@ -13,13 +13,15 @@ from src.core.use_case.account.deposit_fund_in_account import DepositFundInAccou
 from src.core.use_case.account.withdraw_fund import WithDrawFund
 from src.core.use_case.account.close_account import CloseAccount
 from src.core.use_case.account.get_account_details import GetAccountDetails
+from src.core.share.event_driven.event_bus import EventBus
 
 class TestUseCaseRegisterNewAccount(unittest.TestCase):
 
     def setUp(self):
         self.accountRepository = AccountRepository()
         self.customerRepository = CustomerRepository()
-        self.registerNewAccount = RegisterNewAccount(self.accountRepository, self.customerRepository)
+        event_bus = EventBus()
+        self.registerNewAccount = RegisterNewAccount(self.accountRepository, self.customerRepository, event_bus)
         self.registerNewCustomer = RegisterNewCustomer(self.customerRepository)
         self.idAccount = 1
 
