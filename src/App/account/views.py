@@ -11,8 +11,8 @@ from src.core.infrastructure.repository.account_repository import AccountReposit
 from src.core.use_case.account.register_new_account import RegisterNewAccount
 from src.core.use_case.customer.register_new_customer import RegisterNewCustomer
 from src.core.infrastructure.repository.customer_repository import CustomerRepository
-from src.core.use_case.account.deposit_fund_in_account import DepositFundInAccount
-from src.core.use_case.account.withdraw_fund import WithDrawFund
+from src.core.use_case.transaction.deposit_fund_in_account import DepositFundInAccount
+from src.core.use_case.transaction.withdraw_fund import WithDrawFund
 from src.core.use_case.account.close_account import CloseAccount
 from src.core.use_case.account.get_account_details import GetAccountDetails
 

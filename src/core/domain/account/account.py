@@ -1,6 +1,6 @@
 from src.core.domain.account.open_date import OpenDate
-from src.core.domain.account.credit import Credit
-from src.core.domain.account.debit import Debit
+from src.core.domain.transaction.credit import Credit
+from src.core.domain.transaction.debit import Debit
 from src.core.domain.account.status import Status
 from src.core.domain.exceptions import DontAllowWithdawMoreThanExistingFunds
 from src.core.domain.agregate_root import AgregateRoot
@@ -13,7 +13,6 @@ class Account(AgregateRoot):
         self.idCustomer = idCustomer
         self.balance = 0
         self.OpeningDate = OpenDate.create()
-        self.creditList = list()
         self.debitList = list()
 
     @staticmethod
@@ -23,26 +22,14 @@ class Account(AgregateRoot):
         account.register(accountWasCreated)
         return account
 
-    def makeCredit(self, amountValue, descriptionText):
-        credit = Credit(amountValue, descriptionText)
-        self.creditList.append(credit)
-        self.balance = self._calculateTotalCredit()
-    
-    def withDraw(self, amountValue, descriptionText):
-        debit = Debit(amountValue, descriptionText)
-        if debit.get_amount() <= self.balance:
-            self.debitList.append(debit)
-            self.balance = self._calculateTotalDebit()
+    def increase_balance(self, balance):
+        self.balance = balance
+
+    def decrease_balance(self, count):
+        if count <= self.balance:
+            self.balance = self.balance - count
         else:
             raise DontAllowWithdawMoreThanExistingFunds()
-
-
-
-    def _calculateTotalCredit(self):
-        count = 0
-        for item in self.creditList:
-            count += item.get_amount()
-        return count
 
     def _calculateTotalDebit(self):
         count = 0

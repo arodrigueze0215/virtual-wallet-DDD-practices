@@ -1,18 +1,35 @@
 import unittest
+#Exceptions
 from src.core.domain.exceptions import DontAllowWithdawMoreThanExistingFunds
+
+#Customer
 from src.core.domain.customer.name import Name
 from src.core.domain.customer.contact_number import ContactNumber
 from src.core.domain.customer.person_number import PersonNumber
 from src.core.domain.customer.customer import Customer
-from src.core.domain.account.account import Account
-from src.core.infrastructure.repository_in_memory.account_repository import AccountRepository
 from src.core.infrastructure.repository_in_memory.customer_repository import CustomerRepository
 from src.core.use_case.customer.register_new_customer import RegisterNewCustomer
+
+#Account
+from src.core.domain.account.account import Account
+from src.core.infrastructure.repository_in_memory.account_repository import AccountRepository
 from src.core.use_case.account.register_new_account import RegisterNewAccount
-from src.core.use_case.account.deposit_fund_in_account import DepositFundInAccount
-from src.core.use_case.account.withdraw_fund import WithDrawFund
 from src.core.use_case.account.close_account import CloseAccount
 from src.core.use_case.account.get_account_details import GetAccountDetails
+from src.core.use_case.account.increase_balance_account import IncreaseBalanceAccount
+from src.core.use_case.account.decrease_balance_account import DecreaseBalanceAccount
+
+#transaction
+from src.core.infrastructure.repository_in_memory.credit_repository import CreditRepository
+from src.core.infrastructure.repository_in_memory.debit_repository import DebitRepository
+from src.core.use_case.transaction.deposit_fund_in_account import DepositFundInAccount
+from src.core.use_case.transaction.withdraw_fund import WithDrawFund
+
+#subscribers
+from src.core.infrastructure.subscribers.after_fund_was_deposited import AfterFundWasDeposited
+from src.core.infrastructure.subscribers.after_fund_was_withdrew import AfterFundWasWithDrew
+
+#Share
 from src.core.share.event_driven.event_bus import EventBus
 
 class TestUseCaseRegisterNewAccount(unittest.TestCase):
@@ -52,11 +69,15 @@ class TestUseCaseDepositFundExistingAccount(unittest.TestCase):
 
     def setUp(self):
         self.accountRepository = AccountRepository()
-        self.depositFundInAccount = DepositFundInAccount(self.accountRepository)
+        self.creditRepository = CreditRepository()
+        self.event_bus = EventBus()
+        self.depositFundInAccount = DepositFundInAccount(self.creditRepository, self.event_bus)
+        self.increase_balance_account = IncreaseBalanceAccount(self.accountRepository, self.creditRepository)
     
     def test_allow_customer_deposit_funds_an_existing_account(self):
         self._given_created_customer()
         self._given_an_existing_account()
+        self._given_an_fund_was_deposited_event_domain_subscribed()
         self._when_deposit_fund_into_account()
         self._then_verify_whether_account_has_balance()        
 
@@ -72,6 +93,10 @@ class TestUseCaseDepositFundExistingAccount(unittest.TestCase):
         idCustomer = 1
         self.account = Account.create(self.idAccount, idCustomer)
         self.accountRepository.save(self.account)
+
+    def _given_an_fund_was_deposited_event_domain_subscribed(self):
+        afterFundWasDeposited = AfterFundWasDeposited(self.increase_balance_account, self.event_bus, account_id=self.idAccount)
+        afterFundWasDeposited()
     
     def _when_deposit_fund_into_account(self):
         amount = 100
@@ -87,10 +112,14 @@ class TestUseCaseCustomerWithdrawFundsExistingAccount(unittest.TestCase):
 
     def setUp(self):
         self.accountRepository = AccountRepository()
-        self.withdrawFund = WithDrawFund(self.accountRepository)
+        self.event_bus = EventBus()
+        self.debit_repository = DebitRepository()
+        self.withdrawFund = WithDrawFund(self.debit_repository, self.event_bus)
+        self.decrease_balance_account = DecreaseBalanceAccount(self.accountRepository,self.debit_repository)
 
     def test_allow_the_customer_to_withdraw_funds_from_an_existing_account(self):
         self._given_an_existing_account()
+        self._given_an_fund_was_withdrew_event_domain_subscribed()
         self._when_customer_withdraw_from_existing_account()
         self._then_verify_whether_account_has_balance()
     
@@ -98,8 +127,13 @@ class TestUseCaseCustomerWithdrawFundsExistingAccount(unittest.TestCase):
         self.idAccount = 1
         idCustomer = 1
         account = Account.create(self.idAccount, idCustomer)
-        account.makeCredit(300, 'A deposit of 300')
+        account.increase_balance(300)
         self.accountRepository.save(account)
+    
+    def _given_an_fund_was_withdrew_event_domain_subscribed(self):
+        after_fund_was_withdrew = AfterFundWasWithDrew(self.decrease_balance_account, self.event_bus, account_id=self.idAccount)
+        after_fund_was_withdrew()
+
 
     def _when_customer_withdraw_from_existing_account(self):
         amount = 10
@@ -131,13 +165,13 @@ class TestUseCaseAllowCustomerToCloseAccountIfBalanceIsZero(unittest.TestCase):
         self.idAccount = 1
         idCustomer = 1
         self.account = Account.create(self.idAccount, idCustomer)
-        self.account.makeCredit(300, 'A deposit of 300')
+        self.account.increase_balance(300)
 
     def _given_a_300_withdraw_funds(self):
-        self.account.withDraw(300, 'A withdraw of 300 from ATM')
+        self.account.decrease_balance(300)
     
     def _given_a_200_withdraw_funds(self):
-        self.account.withDraw(200, 'A withdraw of 200 from ATM')
+        self.account.decrease_balance(200)
 
     def _when_customer_tries_close_account(self):
         self.accountRepository.save(self.account)
@@ -158,18 +192,26 @@ class TestUseCaseAllowCustomerToCloseAccountIfBalanceIsZero(unittest.TestCase):
 class TestUseCaseDontAllowWithdrawMorThanExistingFunds(unittest.TestCase):
     def setUp(self):
         self.accountRepository = AccountRepository()
-        self.withdrawFund = WithDrawFund(self.accountRepository)
+        self.event_bus = EventBus()
+        self.debit_repository = DebitRepository()
+        self.decrease_balance_account = DecreaseBalanceAccount(self.accountRepository, self.debit_repository)
+        self.withdrawFund = WithDrawFund(self.debit_repository, self.event_bus)
 
     def test_do_not_allow_the_Customer_to_Withdraw_more_than_the_existing_funds(self):
         self._given_an_existing_account()
+        self._when_launch_fund_was_withdrew_event_domain()
         self._when_customer_withdraw_from_existing_account()
     
     def _given_an_existing_account(self):
         self.idAccount = 1
         idCustomer = 1
         self.account = Account.create(self.idAccount, idCustomer)
-        self.account.makeCredit(300, 'A deposit of 300')
+        self.account.increase_balance(300)
         self.accountRepository.save(self.account)
+
+    def _when_launch_fund_was_withdrew_event_domain(self):
+        after_fund_was_withdrew = AfterFundWasWithDrew(self.decrease_balance_account, self.event_bus, account_id=self.idAccount)
+        after_fund_was_withdrew()
 
     def _when_customer_withdraw_from_existing_account(self):
         amount = 400
@@ -192,7 +234,7 @@ class TestUseCaseAllowGetAccountDetails(unittest.TestCase):
         idAccount = 1
         idCustomer = 1
         account = Account.create(idAccount, idCustomer)
-        account.makeCredit(300, 'A deposit of 300')
+        account.increase_balance(300)
         self.accountRepository.save(account)
 
 
